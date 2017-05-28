@@ -1,21 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#define DEAD 0
-#define LIVE 1
-struct grid;
-typedef struct grid grid;
-void print(grid* game);
-void clear(grid* game);
-void kill(grid* game, int i, int j);
-void birth(grid* game, int i, int j);
-grid* new_game(int width, int height);
-int isAlive(grid* game, int i, int j);
-int getNeighbor(grid* game, int i, int j, int dx, int dy);
-int** countLiveNeighbors(grid* game);
-int iterate(grid* game);
-void simulate(grid* game, int periods);
-void delete(grid* game);
+#include "life.h"
 
 struct grid
 {
@@ -25,7 +8,7 @@ struct grid
 	int live_cells;
 };
 
-void delete(grid* game)
+void delete_game(grid* game)
 {
 	for (int i = 0; i < game->height; i++)
 	{
@@ -41,7 +24,8 @@ void print(grid* game)
 	{
 		for (int j = 0; j < game->width; j++)
 		{
-			printf("%d ", isAlive(game, i, j));
+			char c = isAlive(game, i, j) ? LIVE_CHAR : DEAD_CHAR;
+			printf("%c ", c);
 		}
 		printf("\n");
 	}
@@ -212,42 +196,21 @@ void simulate(grid* game, int periods)
 void extinction(grid* game)
 {
 	int iterations = 0;
-	while (game->live_cells > 0)
+	for (;;)
 	{
 		print(game);
-		// printf("\n");
+		if (game->live_cells == 0)
+		{
+			printf("No live cells remaining.\n");
+			break;
+		}
 		if (iterate(game) == 0)
 		{
 			printf("Equilibrium reached.\n");
 			break;
 		}
 		iterations++;
-		getchar();
+		while (getchar() != '\n');
 	}
 	printf("Simulation ended after %d generations.\n", iterations);
-}
-
-int main(int argc, char** argv)
-{
-	if (argc != 3)
-	{
-		printf("Invalid arguments\n");
-		printf("Format: %s [width] [height]\n", argv[0]);
-		return -1;
-	}
-	
-	int width = atoi(argv[1]);
-	int height = atoi(argv[2]);
-	
-	grid* game = new_game(width, height);
-
-	birth(game, 0, 2);
-	birth(game, 1, 0);
-	birth(game, 1, 2);
-	birth(game, 2, 1);
-	birth(game, 2, 2);
-
-	extinction(game);
-	delete(game);
-	return 0;
 }
