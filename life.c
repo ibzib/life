@@ -1,131 +1,181 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 4
 #define DEAD 0
 #define LIVE 1
-int grid[N][N];
-int live_cells;
-void print();
-void clear();
-void kill(int i, int j);
-void birth(int i, int j);
-void initialize();
-int isAlive(int i, int j);
-int getNeighbor(int i, int j, int dx, int dy);
-void countLiveNeighbors(int counts[N][N]);
-int iterate();
-void simulate(int periods);
+struct grid;
+typedef struct grid grid;
+void print(grid* game);
+void clear(grid* game);
+void kill(grid* game, int i, int j);
+void birth(grid* game, int i, int j);
+grid* new_game(int width, int height);
+int isAlive(grid* game, int i, int j);
+int getNeighbor(grid* game, int i, int j, int dx, int dy);
+int** countLiveNeighbors(grid* game);
+int iterate(grid* game);
+void simulate(grid* game, int periods);
+void delete(grid* game);
 
-void print()
+struct grid
 {
-	for (int i = 0; i < N; i++)
+	int width;
+	int height;
+	int** cells;
+	int live_cells;
+};
+
+void delete(grid* game)
+{
+	for (int i = 0; i < game->height; i++)
 	{
-		for (int j = 0; j < N; j++)
+		free(game->cells[i]);
+	}
+	free(game->cells);
+	free(game);
+}
+
+void print(grid* game)
+{
+	for (int i = 0; i < game->height; i++)
+	{
+		for (int j = 0; j < game->width; j++)
 		{
-			printf("%d ", isAlive(i, j));
+			printf("%d ", isAlive(game, i, j));
 		}
 		printf("\n");
 	}
 }
 
-void clear()
+void clear(grid* game)
 {
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < game->height; i++)
 	{
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < game->width; j++)
 		{
-			kill(i, j);
+			kill(game, i, j);
 		}
 	}
-	live_cells = 0;
 }
 
-void kill(int i, int j)
+void kill(grid* game, int i, int j)
 {
-	grid[i][j] = DEAD;
-	live_cells--;
+	if (game->cells[i][j] == LIVE)
+	{
+		game->cells[i][j] = DEAD;
+		game->live_cells--;
+	}
 }
 
-void birth(int i, int j)
+void birth(grid* game, int i, int j)
 {
-	grid[i][j] = LIVE;
-	live_cells++;
+	if (game->cells[i][j] == DEAD)
+	{
+		game->cells[i][j] = LIVE;
+		game->live_cells++;
+	}
 }
 
-void initialize()
+grid* new_game(int width, int height)
 {
-	clear();
-	birth(0, 2);
-	birth(1, 0);
-	birth(1, 2);
-	birth(2, 1);
-	birth(2, 2);
+	grid* game = malloc(sizeof(grid));
+	game->width = width;
+	game->height = height;
+	game->cells = malloc(height * sizeof(int*));
+	for (int row = 0; row < height; row++)
+	{
+		game->cells[row] = malloc(width * sizeof(int));
+		for (int col = 0; col < width; col++)
+		{
+			game->cells[row][col] = 0;
+		}
+	}
+	game->live_cells = 0;
+	return game;
 }
 
-int isAlive(int i, int j)
+int isAlive(grid* game, int i, int j)
 {
-	return grid[i][j] == LIVE;
+	return game->cells[i][j] == LIVE;
 }
 
-int getNeighbor(int i, int j, int dx, int dy)
+int getNeighbor(grid* game, int i, int j, int dx, int dy)
 {
 	int ni = i + dx;
 	int nj = j + dy;
-	if (ni < 0 || ni >= N || nj < 0 || nj >= N)
+	if (ni < 0 || ni >= game->height || nj < 0 || nj >= game->width)
 	{
 		// out of bounds
 		return DEAD;
 	}
 	else
 	{
-		return isAlive(ni, nj);
+		return isAlive(game, ni, nj);
 	}
 }
 
-void countLiveNeighbors(int counts[N][N])
+int** countLiveNeighbors(grid* game)
 {
-	for (int i = 0; i < N; i++)
+	int** counts = malloc(game->height * sizeof(int*));
+	for (int x = 0; x < game->height; x++)
 	{
-		for (int j = 0; j < N; j++)
-		{
-			for (int dx = -1; dx <= 1; dx++)
-			{
-				for (int dy = -1; dy <= 1; dy++)
-				{
-					if (dx == 0 && dy == 0)
-						continue;
-					counts[i][j] += getNeighbor(i, j, dx, dy);
-				}
-			}
-		}
-	}
-}
-
-int iterate()
-{
-	int counts[N][N];
-	for (int x = 0; x < N; x++)
-	{
-		for (int y = 0; y < N; y++)
+		counts[x] = malloc(game->width * sizeof(int));
+		for (int y = 0; y < game->width; y++)
 		{
 			counts[x][y] = 0;
 		}
 	}
-	countLiveNeighbors(counts);
+	for (int i = 0; i < game->height; i++)
+	{
+		for (int j = 0; j < game->width; j++)
+		{
+			if (isAlive(game, i, j))
+			{
+				int dx = i > 0 ? -1 : 0;
+				for ( ; dx <= 1 && i + dx < game->height; dx++)
+				{
+					int dy = j > 0 ? -1 : 0;
+					for ( ; dy <= 1 && j + dy < game->width; dy++)
+					{
+						if (dx == 0 && dy == 0)
+						{
+							continue;
+						}
+						counts[i+dx][j+dy]++;
+					}
+				}
+			}
+		}
+	}
+/*
+	for (int i = 0; i < game->height; i++)
+	{
+		for (int j = 0; j < game->width; j++)
+		{
+			printf("%d ", counts[i][j]);
+		}
+		printf("\n");
+	}
+*/
+	return counts;
+}
+
+int iterate(grid* game)
+{
+	int** counts = countLiveNeighbors(game);
 	
 	int changes = 0;
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < game->height; i++)
 	{
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < game->width; j++)
 		{
 			int count = counts[i][j];
-			// printf("%d\n", count);
-			if (isAlive(i, j))
+			
+			if (isAlive(game, i, j))
 			{
 				if (count >= 4 || count <= 1)
 				{
-					kill(i, j);
+					kill(game, i, j);
 					changes++;
 				}
 			}
@@ -133,33 +183,40 @@ int iterate()
 			{
 				if (count == 3)
 				{
-					birth(i, j);
+					birth(game, i, j);
 					changes++;
 				}
 			}
 		}
 	}
+
+	for (int i = 0; i < game->height; i++)
+	{
+		free(counts[i]);
+	}
+	free(counts);
+
 	return changes;
 }
 
-void simulate(int periods)
+void simulate(grid* game, int periods)
 {
 	for (int p = 0; p < periods; p++)
 	{
-		print();
+		print(game);
 		printf("\n");
-		iterate();
+		iterate(game);
 	}
 }
 
-void extinction()
+void extinction(grid* game)
 {
 	int iterations = 0;
-	while (live_cells > 0)
+	while (game->live_cells > 0)
 	{
-		print();
+		print(game);
 		// printf("\n");
-		if (iterate() == 0)
+		if (iterate(game) == 0)
 		{
 			printf("Equilibrium reached.\n");
 			break;
@@ -170,12 +227,27 @@ void extinction()
 	printf("Simulation ended after %d generations.\n", iterations);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-	//printf("Enter dimensions of board:\n");
-	//scanf("%d\n", &N);
-	initialize();
-	//simulate(5);
-	extinction();
+	if (argc != 3)
+	{
+		printf("Invalid arguments\n");
+		printf("Format: %s [width] [height]\n", argv[0]);
+		return -1;
+	}
+	
+	int width = atoi(argv[1]);
+	int height = atoi(argv[2]);
+	
+	grid* game = new_game(width, height);
+
+	birth(game, 0, 2);
+	birth(game, 1, 0);
+	birth(game, 1, 2);
+	birth(game, 2, 1);
+	birth(game, 2, 2);
+
+	extinction(game);
+	delete(game);
 	return 0;
 }
