@@ -5,17 +5,26 @@ struct grid
 	int width;
 	int height;
 	int** cells;
+	int** nbr_counts;
 	int live_cells;
 };
 
+void free_2d_array(int** array, int length)
+{
+	for (int i = 0; i < length; i++)
+	{
+		free(array[i]);
+	}
+	free(array);
+	array = NULL;
+}
+
 void delete_game(grid* game)
 {
-	for (int i = 0; i < game->height; i++)
-	{
-		free(game->cells[i]);
-	}
-	free(game->cells);
+	free_2d_array(game->cells, game->height);
+	free_2d_array(game->nbr_counts, game->height);
 	free(game);
+	game = NULL;
 }
 
 void print(grid* game)
@@ -66,12 +75,15 @@ grid* new_game(int width, int height)
 	game->width = width;
 	game->height = height;
 	game->cells = malloc(height * sizeof(int*));
+	game->nbr_counts = malloc(height * sizeof(int*));
 	for (int row = 0; row < height; row++)
 	{
 		game->cells[row] = malloc(width * sizeof(int));
+		game->nbr_counts[row] = malloc(width * sizeof(int));
 		for (int col = 0; col < width; col++)
 		{
 			game->cells[row][col] = 0;
+			game->nbr_counts[row][col] = 0;
 		}
 	}
 	game->live_cells = 0;
@@ -98,17 +110,16 @@ int getNeighbor(grid* game, int i, int j, int dx, int dy)
 	}
 }
 
-int** countLiveNeighbors(grid* game)
+void countLiveNeighbors(grid* game)
 {
-	int** counts = malloc(game->height * sizeof(int*));
 	for (int x = 0; x < game->height; x++)
 	{
-		counts[x] = malloc(game->width * sizeof(int));
 		for (int y = 0; y < game->width; y++)
 		{
-			counts[x][y] = 0;
+			game->nbr_counts[x][y] = 0;
 		}
 	}
+
 	for (int i = 0; i < game->height; i++)
 	{
 		for (int j = 0; j < game->width; j++)
@@ -125,7 +136,7 @@ int** countLiveNeighbors(grid* game)
 						{
 							continue;
 						}
-						counts[i+dx][j+dy]++;
+						game->nbr_counts[i+dx][j+dy]++;
 					}
 				}
 			}
@@ -141,19 +152,18 @@ int** countLiveNeighbors(grid* game)
 		printf("\n");
 	}
 */
-	return counts;
 }
 
 int iterate(grid* game)
 {
-	int** counts = countLiveNeighbors(game);
+	countLiveNeighbors(game);
 	
 	int changes = 0;
 	for (int i = 0; i < game->height; i++)
 	{
 		for (int j = 0; j < game->width; j++)
 		{
-			int count = counts[i][j];
+			int count = game->nbr_counts[i][j];
 			
 			if (isAlive(game, i, j))
 			{
@@ -173,12 +183,6 @@ int iterate(grid* game)
 			}
 		}
 	}
-
-	for (int i = 0; i < game->height; i++)
-	{
-		free(counts[i]);
-	}
-	free(counts);
 
 	return changes;
 }

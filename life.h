@@ -15,7 +15,7 @@ grid* new_game(int width, int height);
 int isAlive(grid* game, int i, int j);
 void delete_game(grid* game);
 int getNeighbor(grid* game, int i, int j, int dx, int dy);
-int** countLiveNeighbors(grid* game);
+void countLiveNeighbors(grid* game);
 int iterate(grid* game);
 void simulate(grid* game, int periods);
 void extinction(grid* game);
