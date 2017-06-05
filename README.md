@@ -53,6 +53,6 @@ Simulation ended after 4 generations.
 ## To do
 
 - [x] get rid of hard-coded dimensions
-- [ ] make countLiveNeighbors more efficient
-- [ ] use ```row``` and ```col``` as increment variable names
-- [ ] in ```life_example```, let user optionally set probability that cells will start alive
+- [ ] look into making countLiveNeighbors more efficient
+- [x] use ```row``` and ```col``` as increment variable names
+- [x] in ```life_example```, let user optionally set probability that cells will start alive

@@ -2,10 +2,30 @@
 #include <math.h>
 #include <time.h>
 
-void show_usage(char* program_call)
+void showUsage(char* program_call)
 {
-		printf("Format: %s width height [life-probability]\n", program_call);
-		printf("Example: %s 5 5 0.7\n", program_call);
+	printf("Format: %s width height [life-probability]\n", program_call);
+	printf("Example: %s 5 5 0.7\n", program_call);
+}
+
+grid* generateRandomGame(int width, int height, float probability)
+{
+	grid* game = newGame(width, height);
+
+	srand(time(NULL));
+	for (int row = 0; row < height; row++)
+	{
+		for (int col = 0; col < width; col++)
+		{
+			float random = (float)rand() / RAND_MAX;
+			if (random < probability)
+			{
+				birth(game, row, col);
+			}
+		}
+	}
+
+	return game;
 }
 
 int main(int argc, char** argv)
@@ -13,7 +33,7 @@ int main(int argc, char** argv)
 	if (argc != 3 && argc != 4)
 	{
 		printf("Invalid arguments\n");
-		show_usage(argv[0]);
+		showUsage(argv[0]);
 		return -1;
 	}
 	
@@ -22,7 +42,7 @@ int main(int argc, char** argv)
 	if (width <= 0 || height <= 0)
 	{
 		printf("Error: Invalid dimensions.\n");
-		show_usage(argv[0]);
+		showUsage(argv[0]);
 		return -1;
 	}
 
@@ -33,28 +53,14 @@ int main(int argc, char** argv)
 		if (probability <= 0)
 		{
 			printf("Error: Invalid probability.\n");
-			show_usage(argv[0]);
+			showUsage(argv[0]);
 			return -1;
 		}
 	}
 	
-	grid* game = new_game(width, height);
-
-	srand(time(NULL));
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			float random = (float)rand() / RAND_MAX;
-			if (random < probability)
-			{
-				birth(game, i, j);
-			}
-		}
-	}
-
+	grid* game = generateRandomGame(width, height, probability);
 	extinction(game);
-	delete_game(game);
+	deleteGame(game);
 	return 0;
 }
 
