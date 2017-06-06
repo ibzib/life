@@ -3,8 +3,8 @@
 Life::Life(int height, int width)
 {
 	assert(height > 0 && width > 0);
-	m_width = width;
 	m_height = height;
+	m_width = width;
 	m_alive_cell_count = 0;
 	m_cells = (Status**)malloc(height * sizeof(Status*));
 	for (int row = 0; row < m_height; row++)
