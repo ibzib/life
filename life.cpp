@@ -136,9 +136,9 @@ int Life::iterate()
 	return changes;
 }
 
-void Life::simulate(int periods)
+void Life::simulate(int iterations)
 {
-	for (int p = 0; p < periods; p++)
+	for (int it = 0; it < iterations; it++)
 	{
 		print();
 		printf("\n");
