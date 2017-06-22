@@ -1,2 +1,2 @@
 all:
-	g++ -std=c++11 life_example.cpp life.cpp -o life_example
+	g++ -std=c++11 life.cpp conway.cpp life_example.cpp  -o life_example
