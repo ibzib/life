@@ -2,42 +2,37 @@
 
 Life::Life(int height, int width)
 {
-	assert(height > 0 && width > 0);
-	m_height = height;
-	m_width = width;
+	m_cells = std::vector<std::vector<Status>>(height, std::vector<Status>(width, Status::dead));
 	m_alive_cell_count = 0;
-	m_cells = (Status**)malloc(height * sizeof(Status*));
-	for (int row = 0; row < m_height; row++)
-	{
-		m_cells[row] = (Status*)malloc(m_width * sizeof(Status));
-		for (int col = 0; col < m_width; col++)
-		{
-			m_cells[row][col] = Status::dead;
-		}
-	}
 }
 
 Life::~Life()
 {
-	for (int row = 0; row < m_height; row++)
-	{
-		free(m_cells[row]);
-	}
-	free(m_cells);
+	
+}
+
+size_t const Life::getHeight()
+{
+	return m_cells.size();
+}
+
+size_t const Life::getWidth()
+{
+	return m_cells.at(0).size();
 }
 
 bool const Life::inBounds(int row, int col)
 {
-	return row >= 0 && row < m_height && col >= 0 && col < m_width;
+	return row >= 0 && row < getHeight() && col >= 0 && col < getWidth();
 }
 
 void const Life::print()
 {
 	const char dead_symbol = '.';
 	const char alive_symbol = '#';
-	for (int row = 0; row < m_height; row++)
+	for (int row = 0; row < getHeight(); row++)
 	{
-		for (int col = 0; col < m_width; col++)
+		for (int col = 0; col < getWidth(); col++)
 		{
 			char symbol = isCellAlive(row, col) ? alive_symbol : dead_symbol;
 			printf("%c ", symbol);
@@ -48,9 +43,9 @@ void const Life::print()
 
 void Life::clear()
 {
-	for (int row = 0; row < m_height; row++)
+	for (int row = 0; row < getHeight(); row++)
 	{
-		for (int col = 0; col < m_width; col++)
+		for (int col = 0; col < getWidth(); col++)
 		{
 			killCell(row, col);
 		}
@@ -59,64 +54,66 @@ void Life::clear()
 
 void Life::killCell(int row, int col)
 {
-	assert(inBounds(row, col));
 	if (isCellAlive(row, col))
 	{
-		m_cells[row][col] = Status::dead;
+		m_cells.at(row).at(col) = Status::dead;
 		m_alive_cell_count--;
 	}
 }
 
 void Life::birthCell(int row, int col)
 {
-	assert(inBounds(row, col));
 	if (!isCellAlive(row, col))
 	{
-		m_cells[row][col] = Status::alive;
+		m_cells.at(row).at(col) = Status::alive;
 		m_alive_cell_count++;
 	}
 }
 
 bool const Life::isCellAlive(int row, int col)
 {
-	assert(inBounds(row, col));
-	return m_cells[row][col] == Status::alive;
+	return m_cells.at(row).at(col) == Status::alive;
 }
 
-int const Life::countAliveNeighbors(int row, int col)
+std::vector<std::vector<int>> const Life::countAliveNeighbors()
 {
-	int count = 0;
-	for (int drow = -1; drow <= 1; drow++)
+	std::vector<std::vector<int>> counts = std::vector<std::vector<int>>(getHeight(), std::vector<int>(getWidth(), 0));
+	for (int row = 0; row < getHeight(); row++)
 	{
-		for (int dcol = -1; dcol <= 1; dcol++)
+		for (int col = 0; col < getWidth(); col++)
 		{
-			if (drow == 0 && dcol == 0)
-				continue;
+			for (int drow = -1; drow <= 1; drow++)
+			{
+				for (int dcol = -1; dcol <= 1; dcol++)
+				{
+					if (drow == 0 && dcol == 0)
+						continue;
 
-			int nbr_row = row + drow;
-			int nbr_col = col + dcol;
-			if (!inBounds(nbr_row, nbr_col))
-				continue;
+					int nbr_row = row + drow;
+					int nbr_col = col + dcol;
+					if (!inBounds(nbr_row, nbr_col))
+						continue;
 
-			if (isCellAlive(nbr_row, nbr_col))
-				count++;
+					if (isCellAlive(nbr_row, nbr_col))
+						counts.at(row).at(col)++;
+				}
+			}
 		}
 	}
-	return count;
+	return counts;
 }
 
-int Life::iterate()
+int Life::conway()
 {	
 	int changes = 0;
-	for (int row = 0; row < m_height; row++)
+	std::vector<std::vector<int>> counts = countAliveNeighbors();
+	for (int row = 0; row < getHeight(); row++)
 	{
-		for (int col = 0; col < m_width; col++)
+		for (int col = 0; col < getWidth(); col++)
 		{
-			int count = countAliveNeighbors(row, col);
-			
 			if (isCellAlive(row, col))
 			{
-				if (count >= 4 || count <= 1)
+				if (counts.at(row).at(col) >= 4 || counts.at(row).at(col) <= 1)
 				{
 					killCell(row, col);
 					changes++;
@@ -124,7 +121,7 @@ int Life::iterate()
 			}
 			else
 			{
-				if (count == 3)
+				if (counts.at(row).at(col) == 3)
 				{
 					birthCell(row, col);
 					changes++;
@@ -136,34 +133,32 @@ int Life::iterate()
 	return changes;
 }
 
-void Life::simulate(int iterations)
+int Life::traffic()
 {
-	for (int it = 0; it < iterations; it++)
-	{
-		print();
-		printf("\n");
-		iterate();
-	}
+	return 0;
 }
 
-void Life::extinction()
+void Life::run(Life& game, int (Life::*rulefunction)(), bool pause)
 {
-	int iterations = 0;
+	int generations = 1;
 	for (;;)
 	{
-		print();
-		if (m_alive_cell_count == 0)
+		game.print();
+		if (game.m_alive_cell_count == 0)
 		{
 			printf("No live cells remaining.\n");
 			break;
 		}
-		if (iterate() == 0)
+		int changes = (game.*rulefunction)();
+		if (changes == 0)
 		{
 			printf("Equilibrium reached.\n");
 			break;
 		}
-		iterations++;
-		while (getchar() != '\n');
+
+		generations++;
+		if (pause)
+			while (getchar() != '\n');
 	}
-	printf("Simulation ended after %d generations.\n", iterations);
+	printf("Simulation ended after %d generations.\n", generations);
 }

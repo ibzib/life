@@ -1,25 +1,25 @@
 #include <cstdio>
 #include <cstdlib>
-#include <cassert>
+#include <vector>
 
 class Life {
 public:
     Life(int height, int width);
     ~Life();
-    int m_height;
-    int m_width;
     int m_alive_cell_count;
+    size_t const getHeight();
+    size_t const getWidth();
     void const print();
     void clear();
     void killCell(int row, int col);
     void birthCell(int row, int col);
     bool const isCellAlive(int row, int col);
-    int iterate();
-    void simulate(int iterations); // runs the given number of iterations
-    void extinction(); // lets user cycle through iterations until game ends
+    int conway();
+    int traffic();
+    static void run(Life& game, int (Life::*rulefunction)(), bool pause);
 private:
     enum class Status { dead, alive };
-    Status** m_cells; // points to an array of m_height arrays of m_width Statuses
+    std::vector<std::vector<Status>> m_cells;
     bool const inBounds(int row, int col);
-    int const countAliveNeighbors(int row, int col);
+    std::vector<std::vector<int>> const countAliveNeighbors();
 };
