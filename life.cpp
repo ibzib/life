@@ -26,16 +26,41 @@ bool Life::inBounds(int row, int col) const
     return row >= 0 && row < getHeight() && col >= 0 && col < getWidth();
 }
 
-void Life::print() const
+bool Life::inBounds(std::pair<int,int> coorpair) const
 {
-    const char dead_symbol = '.';
-    const char alive_symbol = '#';
+    return inBounds(coorpair.first, coorpair.second);
+}
+
+void Life::print(bool border) const
+{
+    char dead_symbol = '.';
+    char alive_symbol = '#';
+    char y_border = '|';
+    char x_border = '-';
+    if (border)
+    {
+        for (int col = 0; col < getWidth()+2; col++)
+        {
+            printf("%c", x_border);
+        }
+        printf("\n");
+    }
     for (int row = 0; row < getHeight(); row++)
     {
+        if (border) printf("%c", y_border);
         for (int col = 0; col < getWidth(); col++)
         {
             char symbol = isCellAlive(row, col) ? alive_symbol : dead_symbol;
-            printf("%c ", symbol);
+            printf("%c", symbol);
+        }
+        if (border) printf("%c", y_border);
+        printf("\n");
+    }
+    if (border)
+    {
+        for (int col = 0; col < getWidth()+2; col++)
+        {
+            printf("%c", x_border);
         }
         printf("\n");
     }
@@ -75,12 +100,17 @@ bool Life::isCellAlive(int row, int col) const
     return m_cells.at(row).at(col) == Status::alive;
 }
 
+bool Life::isCellAlive(std::pair<int,int> coorpair) const
+{
+    return isCellAlive(coorpair.first, coorpair.second);
+}
+
 void Life::run(Life& game, int (*rulefunction)(Life&), bool pause)
 {
     int generations = 1;
     for (;;)
     {
-        game.print();
+        game.print(true);
         if (game.m_alive_cell_count == 0)
         {
             printf("No live cells remaining.\n");

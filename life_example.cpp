@@ -2,6 +2,7 @@
 #include <cmath>
 #include <ctime>
 #include <string>
+using namespace std;
 
 void showUsage(char* program_call)
 {
@@ -29,9 +30,9 @@ Life generateRandomGame(int height, int width, float probability)
     return game;
 }
 
-std::vector<std::vector<int>> countAliveNeighbors(const Life& game)
+vector<vector<int>> countAliveNeighbors(const Life& game)
 {
-    std::vector<std::vector<int>> counts = std::vector<std::vector<int>>(game.getHeight(), std::vector<int>(game.getWidth(), 0));
+    auto counts = vector<vector<int>>(game.getHeight(), vector<int>(game.getWidth(), 0));
     for (int row = 0; row < game.getHeight(); row++)
     {
         for (int col = 0; col < game.getWidth(); col++)
@@ -60,7 +61,7 @@ std::vector<std::vector<int>> countAliveNeighbors(const Life& game)
 int conway(Life& game)
 {	
     int changes = 0;
-    std::vector<std::vector<int>> counts = countAliveNeighbors(game);
+    auto counts = countAliveNeighbors(game);
     for (int row = 0; row < game.getHeight(); row++)
     {
         for (int col = 0; col < game.getWidth(); col++)
@@ -87,10 +88,82 @@ int conway(Life& game)
     return changes;
 }
 
+vector<vector<pair<int,int>>> getTrafficMoves(const Life& game)
+{
+    auto moves = vector<vector<pair<int,int>>>(game.getHeight(), vector<pair<int,int>>(game.getWidth()));
+    for (int row = 0; row < game.getHeight(); row++)
+    {
+        for (int col = 0; col < game.getWidth(); col++)
+        {
+            if (!game.isCellAlive(row, col))
+            {
+                moves[row][col] = make_pair(row,col);
+            }
+            else
+            {
+                auto move = make_pair(row,col+1); // forward
+                if (!game.inBounds(move) || !game.isCellAlive(move))
+                {
+                    moves[row][col] = move;
+                    continue;
+                }
+                move = make_pair(row-1, col); // left
+                if (game.inBounds(move) && !game.isCellAlive(move))
+                {
+                    moves[row][col] = move;
+                    continue;
+                }
+                move = make_pair(row+1, col); // right
+                if (game.inBounds(move) && !game.isCellAlive(move))
+                {
+                    moves[row][col] = move;
+                    continue;
+                }
+                else
+                {
+                    move = make_pair(row, col); // stay
+                    moves[row][col] = move;
+                }
+            }
+        }
+    }
+    return moves;
+}
+
 int traffic(Life& game)
 {
-    
-    return 0;
+    int changes = 0;
+    auto moves = getTrafficMoves(game);
+    for (int row = 0; row < game.getHeight(); row++)
+    {
+        for (int col = 0; col < game.getWidth(); col++)
+        {
+            int nrow = moves[row][col].first;
+            int ncol = moves[row][col].second;
+            if (nrow==row && ncol==col)
+            {
+                continue;
+            }
+            else if (!game.inBounds(nrow, ncol))
+            {
+                game.killCell(row, col);
+            }
+            else if (game.isCellAlive(nrow, ncol))
+            {
+                // collision!
+                game.killCell(row, col);
+                game.killCell(nrow, ncol);
+            }
+            else
+            {
+                // move car
+                game.killCell(row, col);
+                game.birthCell(nrow, ncol);
+            }
+            changes++;
+        }
+    }
+    return changes;
 }
 
 int main(int argc, char** argv)
@@ -102,7 +175,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    std::string flag(argv[1]);
+    string flag(argv[1]);
     int argstart = flag=="-c" || flag=="-t" ? 1 : 0;
     int height = atoi(argv[argstart+1]);
     int width = atoi(argv[argstart+2]);
@@ -114,7 +187,7 @@ int main(int argc, char** argv)
     }
 
     float probability = 0.5;
-    if (argc == 4)
+    if (argc >= argstart + 4)
     {
         probability = atof(argv[argstart+3]);
         if (probability <= 0 || probability >= 1)

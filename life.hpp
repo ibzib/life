@@ -9,13 +9,14 @@ public:
     int m_alive_cell_count;
     size_t getHeight() const;
     size_t getWidth() const;
-    void print() const;
+    void print(bool border) const;
     void clear();
     void killCell(int row, int col);
     void birthCell(int row, int col);
-    void movecell(int drow, int dcol);
     bool inBounds(int row, int col) const;
+    bool inBounds(std::pair<int,int> coorpair) const;
     bool isCellAlive(int row, int col) const;
+    bool isCellAlive(std::pair<int,int> coorpair) const;
     static void run(Life& game, int (*rulefunction)(Life&), bool pause);
 private:
     enum class Status { dead, alive };
