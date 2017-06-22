@@ -29,6 +29,41 @@ Life generateRandomGame(int height, int width, float probability)
 	return game;
 }
 
+int conway(Life& game)
+{	
+	int changes = 0;
+	std::vector<std::vector<int>> counts = game.countAliveNeighbors();
+	for (int row = 0; row < game.getHeight(); row++)
+	{
+		for (int col = 0; col < game.getWidth(); col++)
+		{
+			if (game.isCellAlive(row, col))
+			{
+				if (counts.at(row).at(col) >= 4 || counts.at(row).at(col) <= 1)
+				{
+					game.killCell(row, col);
+					changes++;
+				}
+			}
+			else
+			{
+				if (counts.at(row).at(col) == 3)
+				{
+					game.birthCell(row, col);
+					changes++;
+				}
+			}
+		}
+	}
+
+	return changes;
+}
+
+int traffic(Life& game)
+{
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	if (argc < 3)
@@ -64,11 +99,11 @@ int main(int argc, char** argv)
 	Life game = generateRandomGame(height, width, probability);
 	if (flag == "-t")
 	{
-		Life::run(game, &Life::traffic, true);
+		Life::run(game, &traffic, true);
 	}
 	else
 	{
-		Life::run(game, &Life::conway, true);
+		Life::run(game, &conway, true);
 	}
 	return 0;
 }

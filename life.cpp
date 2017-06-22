@@ -103,42 +103,7 @@ std::vector<std::vector<int>> const Life::countAliveNeighbors()
 	return counts;
 }
 
-int Life::conway()
-{	
-	int changes = 0;
-	std::vector<std::vector<int>> counts = countAliveNeighbors();
-	for (int row = 0; row < getHeight(); row++)
-	{
-		for (int col = 0; col < getWidth(); col++)
-		{
-			if (isCellAlive(row, col))
-			{
-				if (counts.at(row).at(col) >= 4 || counts.at(row).at(col) <= 1)
-				{
-					killCell(row, col);
-					changes++;
-				}
-			}
-			else
-			{
-				if (counts.at(row).at(col) == 3)
-				{
-					birthCell(row, col);
-					changes++;
-				}
-			}
-		}
-	}
-
-	return changes;
-}
-
-int Life::traffic()
-{
-	return 0;
-}
-
-void Life::run(Life& game, int (Life::*rulefunction)(), bool pause)
+void Life::run(Life& game, int (*rulefunction)(Life&), bool pause)
 {
 	int generations = 1;
 	for (;;)
@@ -149,7 +114,7 @@ void Life::run(Life& game, int (Life::*rulefunction)(), bool pause)
 			printf("No live cells remaining.\n");
 			break;
 		}
-		int changes = (game.*rulefunction)();
+		int changes = rulefunction(game);
 		if (changes == 0)
 		{
 			printf("Equilibrium reached.\n");
