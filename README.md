@@ -1,6 +1,6 @@
 ## Description
 
-- Visualize simple 2D cellular automata
+- Visualize simple 2D, binary-state cellular automata
 - Core functionality is provided by `life.hpp`/`life.cpp`
 - `life_example.cpp` is a simple program illustrating the game. It randomly creates a starting grid of user-specified dimensions, then users cycle through generations by pressing **Enter**.
 - `life_example.cpp` includes the rule sets provided below
