@@ -13,13 +13,6 @@
 3. Each living cell with two or three neighboring cells that are alive survives for the next generation.
 4. Each cell that is currently dead and that has exactly three neighbors that are alive is in just the right nurturing environment to be a “birth cell,” and becomes alive in the next period.
 
-#### `traffic.cpp` Traffic
-- This one is a lot more boring, mostly here just to demonstrate that other rules are possible
-- Each row can be viewed as a lane of traffic flowing from left to right.
-1. If the space ahead of a car in its own lane is unoccupied, it advances to that space.
-2. If the space ahead of a car in its own lane is occupied, and a space adjacent to that car in its neighboring lanes is unoccupied, it will switch lanes (with the left (upper) lane getting preference).
-3. If two cars try to move into the same space at once, they will "crash" and will both be removed from the game.
-
 #### Custom Rules
 - Users can define their own rules by defining a function like `int rulefunction(Life& game)`, then passing its pointer to `Life::run`
 
