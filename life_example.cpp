@@ -8,7 +8,7 @@ extern int conway(Life& game);
 
 void showUsage(char* program_call)
 {
-    printf("Format: %s height width [life-probability (0..1)]\n", program_call);
+    printf("Format: %s width height [life-probability (0..1)]\n", program_call);
     printf("Example: %s 5 5 0.7\n", program_call);
 }
 
@@ -43,8 +43,8 @@ int main(int argc, char** argv)
 
     string flag(argv[1]);
     int argstart = flag=="-c" || flag=="-t" ? 1 : 0;
-    int height = atoi(argv[argstart+1]);
-    int width = atoi(argv[argstart+2]);
+    int width = atoi(argv[argstart+1]);
+    int height = atoi(argv[argstart+2]);
     if (height <= 0 || width <= 0)
     {
         printf("Error: Invalid dimensions.\n");
