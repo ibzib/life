@@ -11,6 +11,11 @@ Life::~Life()
     
 }
 
+int Life::getLiveCellCount() const
+{
+    return m_alive_cell_count;
+}
+
 size_t Life::getHeight() const
 {
     return m_cells.size();
@@ -111,7 +116,7 @@ void Life::run(Life& game, int (*rulefunction)(Life&), bool pause)
     for (;;)
     {
         game.print(true);
-        if (game.m_alive_cell_count == 0)
+        if (game.getLiveCellCount() == 0)
         {
             printf("No live cells remaining.\n");
             break;
