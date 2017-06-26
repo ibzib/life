@@ -21,8 +21,10 @@
 3. Press **Enter** a bunch to iterate through generations
 4. Press **q** to quit
 
-## Demo `./life_example 85 30 0.6`
+## Demo
 ![Demo](demo.gif)
+- Command: `./life_example 85 30 0.6`
+- Created using [Drop to GIF](https://github.com/mortenjust/droptogif/)
 
 ## TODO
 
