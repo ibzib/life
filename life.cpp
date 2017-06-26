@@ -36,41 +36,6 @@ bool Life::inBounds(std::pair<int,int> coorpair) const
     return inBounds(coorpair.first, coorpair.second);
 }
 
-void Life::print(bool border) const
-{
-    char dead_symbol = '.';
-    char alive_symbol = '#';
-    char y_border = '|';
-    char x_border = '-';
-    if (border)
-    {
-        for (int col = 0; col < getWidth()+2; col++)
-        {
-            printf("%c", x_border);
-        }
-        printf("\n");
-    }
-    for (int row = 0; row < getHeight(); row++)
-    {
-        if (border) printf("%c", y_border);
-        for (int col = 0; col < getWidth(); col++)
-        {
-            char symbol = isCellAlive(row, col) ? alive_symbol : dead_symbol;
-            printf("%c", symbol);
-        }
-        if (border) printf("%c", y_border);
-        printf("\n");
-    }
-    if (border)
-    {
-        for (int col = 0; col < getWidth()+2; col++)
-        {
-            printf("%c", x_border);
-        }
-        printf("\n");
-    }
-}
-
 void Life::clear()
 {
     for (int row = 0; row < getHeight(); row++)
@@ -110,27 +75,88 @@ bool Life::isCellAlive(std::pair<int,int> coorpair) const
     return isCellAlive(coorpair.first, coorpair.second);
 }
 
+void Life::print() const
+{
+    const static char dead_symbol = '.';
+    const static char alive_symbol = '#';
+    const static char y_border = '|';
+    const static char x_border = '=';
+
+    erase();
+    for (int col = 0; col < getWidth()+2; col++)
+    {
+        addch(x_border);
+    }
+    addch('\n');
+    for (int row = 0; row < getHeight(); row++)
+    {
+        addch(y_border);
+        for (int col = 0; col < getWidth(); col++)
+        {
+            char symbol = isCellAlive(row, col) ? alive_symbol : dead_symbol;
+            addch(symbol);
+        }
+        addch(y_border);
+        addch('\n');
+    }
+    for (int col = 0; col < getWidth()+2; col++)
+    {
+        addch(x_border);
+    }
+    addch('\n');
+}
+
 void Life::run(Life& game, int (*rulefunction)(Life&), bool pause)
 {
+    initscr();
+    noecho();
+
+    if (game.getHeight() > LINES-3 || game.getWidth() > COLS-3)
+    {
+        endwin();
+        printf("Error: not enough space in console to render game size %zu x %zu\n", game.getWidth(), game.getHeight());
+        return;
+    }
+
     int generations = 1;
     for (;;)
     {
-        game.print(true);
+        game.print();
         if (game.getLiveCellCount() == 0)
         {
-            printf("No live cells remaining.\n");
+            printw("No live cells remaining.\n");
             break;
         }
         int changes = rulefunction(game);
         if (changes == 0)
         {
-            printf("Equilibrium reached.\n");
+            printw("Equilibrium reached.\n");
             break;
         }
-
         generations++;
+
         if (pause)
-            while (getchar() != '\n');
+        {
+            for (;;)
+            {
+                char c = getch();
+                if (c == '\n')
+                {
+                    break;
+                }
+                else if (c == 'q')
+                {
+                    endwin();
+                    return;
+                }
+            }
+        }
     }
-    printf("Simulation ended after %d generations.\n", generations);
+
+    attron(A_BOLD);
+    printw("Simulation ended after %d generations.\n", generations);
+    attroff(A_BOLD);
+    printw("Press 'q' to quit...");
+    while (getch() != 'q');
+    endwin();
 }
