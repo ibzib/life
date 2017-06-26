@@ -19,7 +19,10 @@
 1. `make`
 2. `./life_example 5 5 0.6`
 3. Press **Enter** a bunch to iterate through generations
-4. Press `q` to quit
+4. Press **q** to quit
+
+## Demo `./life_example 85 30 0.6`
+![Demo](demo.gif)
 
 ## TODO
 
