@@ -34,28 +34,19 @@ Life generateRandomGame(int height, int width, float probability)
 
 int main(int argc, char** argv)
 {
-    if (argc < 3)
-    {
-        printf("Invalid arguments\n");
-        showUsage(argv[0]);
-        return 1;
-    }
-
-    string flag(argv[1]);
-    int argstart = flag=="-c" || flag=="-t" ? 1 : 0;
-    int width = atoi(argv[argstart+1]);
-    int height = atoi(argv[argstart+2]);
+    int width = argc >= 2 ? atoi(argv[1]) : 10;
+    int height = argc >= 3 ? atoi(argv[2]) : 10;
     if (height <= 0 || width <= 0)
     {
-        printf("Error: Invalid dimensions.\n");
+        printf("error: invalid dimensions.\n");
         showUsage(argv[0]);
         return 1;
     }
 
     float probability = 0.5;
-    if (argc >= argstart + 4)
+    if (argc >= 4)
     {
-        probability = atof(argv[argstart+3]);
+        probability = atof(argv[4]);
         if (probability <= 0 || probability >= 1)
         {
             printf("Error: Invalid probability.\n");
